@@ -3,3 +3,7 @@ google-cloud/
 terrademo/
 
 *.json
+
+ssh/
+
+data-engineering-zoomcamp/
