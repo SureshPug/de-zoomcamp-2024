@@ -1,0 +1,60 @@
+-- Create  External Table
+CREATE OR REPLACE EXTERNAL TABLE `tidy-agency-412121.ny_taxi.external_green_tripdata`
+OPTIONS (
+  format = 'parquet',
+  uris = ['gs://nyc-tl-data-sp/nytaxi/green_tripdata_2022-01.parquet',
+'gs://nyc-tl-data-sp/nytaxi/green_tripdata_2022-02.parquet',
+'gs://nyc-tl-data-sp/nytaxi/green_tripdata_2022-03.parquet',
+'gs://nyc-tl-data-sp/nytaxi/green_tripdata_2022-04.parquet',
+'gs://nyc-tl-data-sp/nytaxi/green_tripdata_2022-05.parquet',
+'gs://nyc-tl-data-sp/nytaxi/green_tripdata_2022-06.parquet',
+'gs://nyc-tl-data-sp/nytaxi/green_tripdata_2022-07.parquet',
+'gs://nyc-tl-data-sp/nytaxi/green_tripdata_2022-08.parquet',
+'gs://nyc-tl-data-sp/nytaxi/green_tripdata_2022-09.parquet',
+'gs://nyc-tl-data-sp/nytaxi/green_tripdata_2022-10.parquet',
+'gs://nyc-tl-data-sp/nytaxi/green_tripdata_2022-11.parquet',
+'gs://nyc-tl-data-sp/nytaxi/green_tripdata_2022-12.parquet']
+);
+
+
+-- Create a non partitioned table from external table
+CREATE OR REPLACE TABLE tidy-agency-412121.ny_taxi.green_tripdata_non_partitoned AS
+SELECT * FROM tidy-agency-412121.ny_taxi.external_green_tripdata;
+
+
+-- Count records
+SELECT COUNT(*) FROM tidy-agency-412121.ny_taxi.external_green_tripdata
+LIMIT 10
+
+--Write a query to count the distinct number of PULocationIDs for the entire dataset on both the tables.
+SELECT COUNT(DISTINCT(PULocationID)) FROM tidy-agency-412121.ny_taxi.external_green_tripdata
+LIMIT 10
+
+SELECT COUNT(DISTINCT(PULocationID)) FROM tidy-agency-412121.ny_taxi.green_tripdata_non_partitoned
+LIMIT 10
+
+--How many records have a fare_amount of 0?
+SELECT COUNT(*) FROM tidy-agency-412121.ny_taxi.external_green_tripdata
+WHERE fare_amount = 0
+LIMIT 10
+
+-- Create a partitioned table from external table
+CREATE OR REPLACE TABLE tidy-agency-412121.ny_taxi.green_tripdata_partitoned
+PARTITION BY
+DATE(lpep_pickup_datetime) AS
+SELECT * FROM tidy-agency-412121.ny_taxi.external_green_tripdata;
+
+-- Creating a partition and cluster table
+CREATE OR REPLACE TABLE tidy-agency-412121.ny_taxi.green_tripdata_partitoned_clustered
+PARTITION BY DATE(lpep_pickup_datetime)
+CLUSTER BY PUlocationID AS
+SELECT * FROM tidy-agency-412121.ny_taxi.external_green_tripdata;
+
+--Write a query to retrieve the distinct PULocationID between lpep_pickup_datetime 06/01/2022 and 06/30/2022 (inclusive)
+SELECT DISTINCT(PULocationID)
+FROM tidy-agency-412121.ny_taxi.green_tripdata_non_partitoned
+WHERE DATE(lpep_pickup_datetime) BETWEEN '2022-06-01' AND '2022-06-30'
+
+SELECT DISTINCT(PULocationID)
+FROM tidy-agency-412121.ny_taxi.green_tripdata_partitoned
+WHERE DATE(lpep_pickup_datetime) BETWEEN '2022-06-01' AND '2022-06-30'
