@@ -14,5 +14,6 @@ data-engineering-zoomcamp/
 *.yml
 
 
-!week4/*
-!target/*
+!week4/**
+
+!target/
