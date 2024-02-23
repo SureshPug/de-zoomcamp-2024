@@ -14,4 +14,4 @@ data-engineering-zoomcamp/
 *.yml
 
 
-week4/
+!week4/*
